@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fujie.dao.mapper.TestMapper">
+<sql id="empinfo">
+				id as id,
+				FEMPNO as fempno,
+				FEMPNAME as fempname,
+				FAGE as fage,
+				FSALARY as fsalarys
+</sql>
+<!-- 查询给4种人分类 -->
+<select id="queryTest" resultType="type"> 
+		SELECT 
+				SUM(CASE WHEN emp.fsalary &gt; 9999 AND emp.fage  &gt; 35 THEN 1 ELSE 0 END) As 'one',
+				SUM(CASE WHEN emp.fsalary &lt; 9999 and emp.fage &gt; 35 THEN 1 ELSE 0 END) As 'two',
+				SUM(CASE WHEN emp.fsalary &lt; 9999 and emp.fage &lt; 35 THEN 1 ELSE 0 END) As 'three',
+				SUM(CASE WHEN emp.fsalary &gt; 9999 and emp.fage &lt; 35 THEN 1 ELSE 0 END) As 'four'
+		FROM empinfo emp
+		WHERE emp.fsalary and emp.fage			
+</select>
+
+<!-- 插入4种人 -->
+<insert id="insertTest" parameterType="test">
+INSERT INTO EMPINFO(
+					FEMPNO,
+					FEMPNAME,
+					FAGE,
+					FSALARY
+					) VALUES(
+					#{fempno},
+					#{fempname},
+					#{fage},
+					#{fsalary});
+</insert>
+
+<select id="queryList"   parameterType="rowBounds"  resultType="test" >
+			SELECT
+			<include refid="empinfo" />
+			FROM
+				EMPINFO
+			WHERE
+				1 = 1
+			GROUP BY id
+			LIMIT  #{currentResult,jdbcType=INTEGER},#{showCount,jdbcType=INTEGER}  
+</select>
+
+<select id="testRowBounds" resultType="test">
+	SELECT
+    <include refid="empinfo"/>
+	FROM
+		EMPINFO
+	WHERE
+		1 = 1
+	GROUP BY id
+</select>
+
+<select id="queryCount" resultType="java.lang.Integer">
+SELECT
+	count(*)
+FROM
+	empinfo
+WHERE
+	1 = 1
+</select>
+
+<select id="testProcedure" parameterType="test" resultType="test" statementType="CALLABLE">
+	{call Query_Pagination(
+		#{prefix,mode=IN,jdbcType=VARCHAR},
+		#{table,mode=IN,jdbcType=VARCHAR},
+		#{result,mode=OUT,jdbcType=VARCHAR}
+	)}
+</select>
+
+</mapper>
